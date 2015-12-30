@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<command name="command_name">
+    <param>firstParam</param>
+    <param>secondParam</param>
+    ...
+    <param>NParam</param>
+</command>

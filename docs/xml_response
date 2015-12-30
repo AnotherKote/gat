@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<command name="commandName">
+    <response_data>Response data here</response_data>
+</command>
