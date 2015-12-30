@@ -1,0 +1,4 @@
+<!-- DEPRECATED -->
+<!-- Info about client PC now is part of the response for corresponding command -->
+<?xml version="1.0"?>
+<hostname>Name</hostname>
