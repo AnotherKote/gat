@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
 <command name="command_name" id="3">
+    <result> Error </result>
+    <process name="pcname" uid="" cpuusage=""/>
     <data>Response data</data>
     <data>data </data>
     <data> .... </data>
