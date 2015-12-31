@@ -1,7 +1,9 @@
 <?xml version="1.0"?>
-<command name="command_name" id="3" >
-    <param>firstParam</param>
-    <param>secondParam</param>
-    ...
-    <param>NParam</param>
-</command>
+<got protocol_version="1.0">
+   <command name="command_name" id="3" >
+      <param>firstParam</param>
+      <param>secondParam</param>
+       ...
+      <param>NParam</param>
+   </command>
+</got>
