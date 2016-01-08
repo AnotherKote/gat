@@ -11,9 +11,13 @@ CONFIG += c++11
 INCLUDEPATH += Server
 
 SOURCES += Server/main.cpp \
-           Server/view/private/MainScreen.cpp
+           Server/view/private/MainScreen.cpp \
+    Server/view/private/CommandsManager.cpp \
+    Server/view/private/ExtendParametrEdit.cpp
 
-HEADERS += Server/view/MainScreen.hpp
+HEADERS += Server/view/MainScreen.hpp \
+    Server/view/CommandsManager.hpp \
+    Server/view/ExtendParametrEdit.hpp
 
 TRANSLATIONS += Server/main_ru.ts Server/main_en.ts
 
@@ -24,3 +28,6 @@ TRANSLATIONS += Server/main_ru.ts Server/main_en.ts
 #debug:DESTDIR = ../../gat_builds/debug
 #debug:OBJECTS_DIR = ../../gat_builds/debug/.obj
 #Debug:MOC_DIR = ../../gat_builds/debug/.moc
+
+RESOURCES += \
+    resources/res.qrc

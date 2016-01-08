@@ -1,33 +1,54 @@
 #include <QComboBox>
 #include <QPushButton>
-#include <QVBoxLayout>
+#include <QGridLayout>
+#include <QHBoxLayout>
+#include <QListWidget>
+#include <QEvent>
 
 #include "view/MainScreen.hpp"
+#include "view/CommandsManager.hpp"
 #include <QDebug>
 
 MainScreen::MainScreen(QWidget *parent)
-: QMainWindow ( parent )
+: QMainWindow(parent)
+, m_pUserCommands(nullptr)
+, m_pFire(nullptr)
+, m_pManageCommands(nullptr)
+, m_pClientsList(nullptr)
+, m_pCommandsManager(nullptr)
 {
    createWidgets();
-   QVBoxLayout *layout = new QVBoxLayout(this);
-   layout->addWidget(m_pFire);
-   layout->addWidget(m_pUserCommands);
-   layout->addWidget(m_pManageCommands);
-   layout->addWidget(m_pFire);
-   QWidget *centralWidget = new QWidget(this);
-   centralWidget->setLayout(layout);
-   setCentralWidget(centralWidget);
-   setText();
 
-   connect(m_pFire, &QPushButton::clicked, [&](){
-      if(m_pUserCommands->currentIndex() % 2 == 0)
-      {
-         translateToEnglish();
-      } else
-      {
-         translateToRussian();
-      }
-   });
+   QHBoxLayout *pButtonsAndComboBox = new QHBoxLayout();
+   pButtonsAndComboBox->addWidget(m_pUserCommands, 3);
+   pButtonsAndComboBox->addWidget(m_pFire, 2);
+   pButtonsAndComboBox->addWidget(m_pManageCommands, 0);
+
+   QGridLayout *pMainLayout = new QGridLayout();
+   pMainLayout->addLayout(pButtonsAndComboBox, 0, 0, 1, 4);
+   pMainLayout->addWidget(m_pClientsList, 0, 5, 10, 2);
+
+   QWidget *centralWidget = new QWidget();
+   centralWidget->setLayout(pMainLayout);
+   setCentralWidget(centralWidget);
+
+   connectSignalAndSlots();
+   resetTexts();
+   setMinimumSize(QSize(640,480)); //TODO get rid of the magic numbers
+}
+
+void MainScreen::buttonManageCommandsPressed()
+{
+   m_pCommandsManager->open();
+}
+
+bool MainScreen::event(QEvent *event)
+{
+   if (event->type() == QEvent::LanguageChange)
+   {
+      resetTexts();
+   }
+   return QMainWindow::event(event);
 }
 
 void MainScreen::createWidgets()
@@ -35,45 +56,28 @@ void MainScreen::createWidgets()
    m_pUserCommands = new QComboBox(this);
    m_pFire = new QPushButton(this);
    m_pManageCommands = new QPushButton(this);
+   m_pClientsList = new QListWidget(this);
+   m_pCommandsManager = new CommandsManager(this);
 }
 
-void MainScreen::setText()
+void MainScreen::connectSignalAndSlots()
 {
-   qDebug() << "setText";
-   m_pFire->setText(tr("Fire", "Fire command to clients"));
-   m_pManageCommands->setText(tr("Manager commands", "Open user commands manager"));
+   connect(m_pManageCommands, &QPushButton::clicked, this, &MainScreen::buttonManageCommandsPressed);
+}
 
-   int curIndex = 0;
+void MainScreen::resetTexts()
+{
+   int curListIndex = 0;
+
+   m_pFire->setText(tr("Fire", "Fire command to clients"));
+   m_pManageCommands->setText(tr("Manage commands", "Open user commands manager"));
+
    if(m_pUserCommands->count() > 0)
    {
-      curIndex = m_pUserCommands->currentIndex();
+      curListIndex = m_pUserCommands->currentIndex();
       m_pUserCommands->clear();
    }
 
-   m_pUserCommands->addItem(tr("English"));
-   m_pUserCommands->addItem(tr("Russian"));
-   m_pUserCommands->setCurrentIndex(curIndex);
+   m_pUserCommands->setCurrentIndex(curListIndex);
+   curListIndex = 0;
 }
-
-//<debug>
-#include <QTranslator>
-//</debug>
-
-void MainScreen::setTranslator(QTranslator *translator)
-{
-   m_pTranslator = translator;
-}
-
-void MainScreen::translateToEnglish()
-{
-   qDebug() << "to english " << m_pTranslator->load("main_en.qm","D:/dev/gat/implementation/Server");
-   setText();
-}
-
-void MainScreen::translateToRussian()
-{
-   qDebug() << "to russian " << m_pTranslator->load("main_ru.qm","D:/dev/gat/implementation/Server");
-   setText();
-}
-
-

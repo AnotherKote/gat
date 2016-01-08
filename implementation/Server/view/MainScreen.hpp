@@ -5,7 +5,8 @@
 
 class QComboBox;
 class QPushButton;
-class QTranslator;
+class QListWidget;
+class CommandsManager;
 
 class MainScreen : public QMainWindow
 {
@@ -14,17 +15,21 @@ class MainScreen : public QMainWindow
    QComboBox *m_pUserCommands;
    QPushButton *m_pFire;
    QPushButton *m_pManageCommands;
-   QTranslator *m_pTranslator;
+   QListWidget *m_pClientsList;
+
+   CommandsManager *m_pCommandsManager;
 
    void createWidgets();
+   void connectSignalAndSlots();
+   void resetTexts();
+
 public:
    explicit MainScreen(QWidget *parent = 0);
-   void setText();
+   bool event(QEvent *event);
 
-   void setTranslator(QTranslator *translator);
 public slots:
-   void translateToEnglish();
-   void translateToRussian();
+
+   void buttonManageCommandsPressed();
 };
 
 #endif // MAINSCREEN_H
