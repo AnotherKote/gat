@@ -4,20 +4,26 @@
 #include <QHBoxLayout>
 #include <QListWidget>
 #include <QEvent>
+#include <model/ICommandsModel.hpp>
+#include <model/IClientsModel.hpp>
 
 #include "view/MainScreen.hpp"
 #include "view/CommandsManager.hpp"
 #include <QDebug>
 
-MainScreen::MainScreen(QWidget *parent)
+MainScreen::MainScreen(ICommandsModel *model, IClientsModel *clientsModel, QWidget *parent)
 : QMainWindow(parent)
 , m_pUserCommands(nullptr)
 , m_pFire(nullptr)
 , m_pManageCommands(nullptr)
 , m_pClientsList(nullptr)
 , m_pCommandsManager(nullptr)
+, m_pCmdModel(model)
+, m_pClientsModel(clientsModel)
 {
    createWidgets();
+   fillUserCommandsList();
+   refillClientsList();
 
    QHBoxLayout *pButtonsAndComboBox = new QHBoxLayout();
    pButtonsAndComboBox->addWidget(m_pUserCommands, 3);
@@ -39,6 +45,10 @@ MainScreen::MainScreen(QWidget *parent)
 
 void MainScreen::buttonManageCommandsPressed()
 {
+   qDebug() << "pressed";
+   m_pClientsModel->addClient("abfadfas;lfkaf");
+   m_pClientsModel->addClient("abfadfas;lfkaf");
+   m_pClientsModel->addClient("abfadfas;lfkaf1");
    m_pCommandsManager->open();
 }
 
@@ -51,18 +61,32 @@ bool MainScreen::event(QEvent *event)
    return QMainWindow::event(event);
 }
 
+void MainScreen::fillUserCommandsList()
+{
+   m_pUserCommands->clear();
+   m_pUserCommands->addItems(m_pCmdModel->userCommandsList());
+}
+
+void MainScreen::refillClientsList()
+{
+   m_pClientsList->clear();
+   m_pClientsList->addItems(m_pClientsModel->getClientsNames());
+}
+
 void MainScreen::createWidgets()
 {
    m_pUserCommands = new QComboBox(this);
    m_pFire = new QPushButton(this);
    m_pManageCommands = new QPushButton(this);
    m_pClientsList = new QListWidget(this);
-   m_pCommandsManager = new CommandsManager(this);
+   m_pCommandsManager = new CommandsManager(m_pCmdModel, this);
 }
 
 void MainScreen::connectSignalAndSlots()
 {
    connect(m_pManageCommands, &QPushButton::clicked, this, &MainScreen::buttonManageCommandsPressed);
+   connect(dynamic_cast<QObject*>(m_pCmdModel), SIGNAL(userCommandsListChanged()), this, SLOT(fillUserCommandsList()));
+   connect(dynamic_cast<QObject*>(m_pClientsModel), SIGNAL(clientListChanged()), this, SLOT(refillClientsList()));
 }
 
 void MainScreen::resetTexts()

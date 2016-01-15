@@ -3,6 +3,8 @@
 
 #include <QMainWindow>
 
+class ICommandsModel;
+class IClientsModel;
 class QComboBox;
 class QPushButton;
 class QListWidget;
@@ -16,19 +18,20 @@ class MainScreen : public QMainWindow
    QPushButton *m_pFire;
    QPushButton *m_pManageCommands;
    QListWidget *m_pClientsList;
-
    CommandsManager *m_pCommandsManager;
+   ICommandsModel *m_pCmdModel;
+   IClientsModel *m_pClientsModel;
 
    void createWidgets();
    void connectSignalAndSlots();
    void resetTexts();
 
 public:
-   explicit MainScreen(QWidget *parent = 0);
+   explicit MainScreen(ICommandsModel *model, IClientsModel *clientsModel, QWidget *parent = 0);
    bool event(QEvent *event);
-
 public slots:
-
+   void fillUserCommandsList();
+   void refillClientsList();
    void buttonManageCommandsPressed();
 };
 

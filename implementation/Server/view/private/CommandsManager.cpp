@@ -7,12 +7,15 @@
 #include <QListWidget>
 #include <QLineEdit>
 #include <QLabel>
+#include <QResizeEvent>
+#include <QMessageBox>
 
 #include "view/ExtendParametrEdit.hpp"
 #include "view/CommandsManager.hpp"
+#include "model/ICommandsModel.hpp"
 #include <QDebug>
 
-CommandsManager::CommandsManager(QWidget *parent)
+CommandsManager::CommandsManager(ICommandsModel *cmdModel, QWidget *parent)
 : QDialog(parent)
 , m_pParent(parent)
 , m_pAbstractCommands(nullptr)
@@ -20,6 +23,7 @@ CommandsManager::CommandsManager(QWidget *parent)
 , m_pUserCommandName(nullptr)
 , m_pParameterName(nullptr)
 , m_pParameterData(nullptr)
+, m_pParameterDataList()
 , m_pExtendedParameterDataEdit(nullptr)
 , m_pNewCommand(nullptr)
 , m_pSaveCommand(nullptr)
@@ -27,14 +31,18 @@ CommandsManager::CommandsManager(QWidget *parent)
 , m_pUserCommandsList(nullptr)
 , m_pCommandDescription(nullptr)
 , m_pExtendedParameterEditDialog(nullptr)
+, m_pCmdModel(cmdModel)
 {
    createWidgets();
    resetTexts();
+   refillAbstractCommandsList();
+   refillParameterNamesList();
+   refillUserCommandsList();
+   refillCommandDescription();
    connectSignalAndSlots();
+   enableRemoveButton();
 
    m_pExtendedParameterDataEdit->setIcon(QIcon(":/icons/edit.png"));
-
-   m_pCommandDescription->setText("Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text ");
    m_pCommandDescription->setReadOnly(true);
 
    QHBoxLayout *pSecondRowLayout = new QHBoxLayout;
@@ -42,8 +50,8 @@ CommandsManager::CommandsManager(QWidget *parent)
    pSecondRowLayout->addWidget(m_pUserCommandName);
 
    QHBoxLayout *pThirdRowLayout = new QHBoxLayout;
-   pThirdRowLayout->addWidget(m_pParameterName);
-   pThirdRowLayout->addWidget(m_pParameterData);
+   pThirdRowLayout->addWidget(m_pParameterName, 1);
+   pThirdRowLayout->addWidget(m_pParameterData, 1);
    pThirdRowLayout->addWidget(m_pExtendedParameterDataEdit);
 
    QHBoxLayout *pFourthRowLayout = new QHBoxLayout;
@@ -68,6 +76,7 @@ CommandsManager::CommandsManager(QWidget *parent)
 
 void CommandsManager::openExtendedParameterEditDialog()
 {
+   qDebug();
    m_pExtendedParameterEditDialog->setData(m_pAbstractCommands->currentText(),
                                            m_pParameterName->currentText(),
                                            m_pParameterData->text());
@@ -76,14 +85,191 @@ void CommandsManager::openExtendedParameterEditDialog()
 
 void CommandsManager::extendedDialogResult(int result)
 {
+   qDebug() << "( result : " << result << ")";
    if(result == QDialog::Accepted)
    {
       m_pParameterData->setText(m_pExtendedParameterEditDialog->getParameterData());
    }
 }
 
+void CommandsManager::refillAbstractCommandsList()
+{
+   qDebug();
+   m_pAbstractCommands->clear();
+   for(auto *it: m_pCmdModel->abstractCommandsList())
+   {
+      m_pAbstractCommands->addItem(it->getName());
+   }
+}
+
+void CommandsManager::refillParameterNamesList(QString)
+{
+   qDebug();
+   m_pParameterName->clear();
+   m_pParameterName->addItems(QList<QString>::fromVector(m_pCmdModel->commandParameterNames(m_pAbstractCommands->currentText())));
+   if(m_pParameterName->count() == 0)
+   {
+      m_pParameterName->setEnabled(false);
+      m_pParameterData->setEnabled(false);
+      m_pExtendedParameterDataEdit->setEnabled(false);
+   } else
+   {
+      m_pParameterName->setEnabled(true);
+      m_pParameterData->setEnabled(true);
+      m_pExtendedParameterDataEdit->setEnabled(true);
+   }
+}
+
+void CommandsManager::createParameterDataList(QString)
+{
+   qDebug();
+   m_pParameterData->clear();
+   m_pParameterDataList.clear();
+   for (int i = 0; i < m_pParameterName->count(); ++i)
+   {
+      m_pParameterDataList.append("");
+   }
+}
+
+void CommandsManager::fillParameterDataList(QStringList dataList)
+{
+   qDebug() << " ( dataList : " << dataList << " )";
+   m_pParameterData->clear();
+   m_pParameterDataList.clear();
+   m_pParameterDataList = dataList;
+}
+
+void CommandsManager::manageParameterData(int index)
+{
+   qDebug() << " ( index:" << index << " )";
+   if(m_pParameterDataList.size() == 0)
+   {
+      return;
+   }
+
+   if(index >= 0 && index < m_pParameterDataList.size())
+   {
+      m_pParameterData->setText(m_pParameterDataList.at(index));
+   }
+}
+
+void CommandsManager::saveParameterData()
+{
+   qDebug();
+   m_pParameterDataList[m_pParameterName->currentIndex()] = m_pParameterData->text();
+}
+
+void CommandsManager::refillUserCommandsList()
+{
+   qDebug();
+   m_pUserCommandsList->clear();
+   m_pUserCommandsList->addItems(m_pCmdModel->userCommandsList());
+}
+
+void CommandsManager::saveCommand()
+{
+   qDebug();
+   if(m_pUserCommandName->text().isEmpty())
+   {
+      message(tr("Command name is empty!"));
+      return;
+   }
+
+   int index = 0;
+   for(QString data: m_pParameterDataList)
+   {
+      if(data.isEmpty())
+      {
+         message(tr("Parameter \"%1\" is empty!").arg(m_pParameterName->itemText(index)));
+         return;
+      }
+      index++;
+   }
+   QString errorMessage;
+   if(!m_pCmdModel->saveUserCommand(m_pUserCommandName->text(),
+                                m_pAbstractCommands->currentText(),
+                                QVector<QString>::fromList(m_pParameterDataList),
+                                errorMessage))
+   {
+      message(errorMessage);
+   }
+   enableRemoveButton();
+}
+
+void CommandsManager::message(QString message)
+{
+   qDebug() << "( message : " << message << " )";
+   QMessageBox::information(this, tr("Info", "Message box info"), message);
+}
+
+void CommandsManager::loadCommand(QString userCmdName)
+{
+   qDebug() << "( userCmdName : " << userCmdName << " )";
+   if(userCmdName.isEmpty())
+   {
+      //clear everything?
+      return;
+   }
+   const ICommand *currentCommand = m_pCmdModel->getUserCommand(userCmdName);
+
+   if(!currentCommand)
+   {
+      qCritical() << " Can't get command \"" << userCmdName << "\" from model.";
+      message(tr("Some internal error occured. Please, save log file and send it to developers."));
+      return;
+   }
+
+   //set abstract command
+   int currentAbstractCommandIndex = m_pAbstractCommands->findText(currentCommand->getName());
+   if(currentAbstractCommandIndex == -1)
+   {
+      qCritical() << " Can't get index of abstract command \"" << userCmdName <<"\". Search for \"" << currentCommand->getName() <<"\"";
+      message(tr("Some internal error occured. Please, save log file and send it to developers."));
+      return;
+   }
+   m_pAbstractCommands->setCurrentIndex(currentAbstractCommandIndex);
+
+   //fill parameter data
+   fillParameterDataList(QStringList::fromVector(currentCommand->getParametersData()));
+   manageParameterData(m_pParameterName->currentIndex());
+
+   //fill name
+   m_pUserCommandName->clear();
+   m_pUserCommandName->setText(userCmdName);
+}
+
+void CommandsManager::removeCommand(QString userCmdName)
+{
+   m_pCmdModel->removeCommand(userCmdName);
+   enableRemoveButton();
+}
+
+void CommandsManager::clearAll()
+{
+   m_pAbstractCommands->setCurrentIndex(0);
+   m_pUserCommandName->clear();
+   m_pParameterData->clear();
+}
+
+void CommandsManager::enableRemoveButton()
+{
+   m_pRemoveCommand->setEnabled(m_pUserCommandsList->count() > 0);
+}
+
+void CommandsManager::refillCommandDescription(QString currentAbstractCommand)
+{
+   qDebug() << " ( currentAbstractCommand : " << currentAbstractCommand << " )";
+   if(currentAbstractCommand.isEmpty())
+   {
+      currentAbstractCommand = m_pAbstractCommands->currentText();
+   }
+   m_pCommandDescription->clear();
+   m_pCommandDescription->setText(m_pCmdModel->commandDescription(currentAbstractCommand));
+}
+
 void CommandsManager::showEvent(QShowEvent *)
 {
+   qDebug();
    //TODO set min size ();
    resize(m_pParent->width()/2, m_pParent->height()/2);
    move((m_pParent->x() + m_pParent->width()/2) - width()/2,
@@ -116,10 +302,36 @@ void CommandsManager::connectSignalAndSlots()
 {
    connect(m_pExtendedParameterDataEdit, &QPushButton::clicked, this, &CommandsManager::openExtendedParameterEditDialog);
    connect(m_pExtendedParameterEditDialog, &QDialog::finished, this, &CommandsManager::extendedDialogResult);
+
+   connect(m_pAbstractCommands, &QComboBox::currentTextChanged, this, &CommandsManager::refillParameterNamesList);
+   connect(m_pAbstractCommands, &QComboBox::currentTextChanged, this, &CommandsManager::createParameterDataList);
+   connect(m_pAbstractCommands, &QComboBox::currentTextChanged, this, &CommandsManager::refillCommandDescription);
+
+   connect(m_pParameterName, SIGNAL(currentIndexChanged(int)), this, SLOT(manageParameterData(int)));
+   connect(m_pParameterData, &QLineEdit::editingFinished, this, &CommandsManager::saveParameterData);
+   connect(dynamic_cast<QObject*>(m_pCmdModel), SIGNAL(userCommandsListChanged()), this, SLOT(refillUserCommandsList()));
+
+   connect(m_pUserCommandsList, &QListWidget::currentTextChanged, this, &CommandsManager::loadCommand);
+
+   //buttons
+   connect(m_pSaveCommand, &QPushButton::clicked, this, &CommandsManager::saveCommand);
+   connect(m_pNewCommand, &QPushButton::clicked, this, &CommandsManager::clearAll);
+   connect(m_pRemoveCommand, &QPushButton::clicked, this, [&](){
+      auto selectedItems = m_pUserCommandsList->selectedItems();
+      if(selectedItems.count() > 0)
+      {
+         removeCommand(selectedItems.front()->text());
+      }
+   });
+
+   //   connect(m_pAbstractCommands, &QComboBox::currentTextChanged, [&](QString index){
+//      qDebug() << "int " << index;
+//   });
 }
 
 void CommandsManager::resetTexts()
 {
+   qDebug();
    m_pCommandNameLabel->setText(tr("Command name: "));
    m_pNewCommand->setText(tr("New", "create new command"));
    m_pSaveCommand->setText(tr("Save", "Save command"));
