@@ -12,7 +12,11 @@ GEN_CommandFactory::GEN_CommandFactory()
    m_pHelper = new GEN_CommandsHelper;
 }
 
+#ifdef CLIENT
+IExecutableCommand *GEN_CommandFactory::createCommand(QString cmdName, QVector<QString> parameters)
+#else
 ICommand *GEN_CommandFactory::createCommand(QString cmdName, QVector<QString> parameters)
+#endif
 {
    qDebug() << cmdName << parameters;
    ICommand *retCommand = nullptr;
@@ -42,6 +46,10 @@ ICommand *GEN_CommandFactory::createCommand(QString cmdName, QVector<QString> pa
       qDebug() << "Can't create command " << cmdName << ". No such abstract command";
       return nullptr;
    }
+#ifdef CLIENT
+   return dynamic_cast<IExecutableCommand*>(retCommand);
+#else
    return retCommand;
+#endif
 }
 

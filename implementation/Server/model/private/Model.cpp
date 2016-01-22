@@ -103,9 +103,9 @@ void Model::addClient(QString name)
       qWarning() << "Unable to add client \"" << name << "\". Already in list";
    } else
    {
-      m_clientsList.insert(name, "");
+      m_clientsList.insert(name, CommandResult());
+      emit clientListChanged();
    }
-   emit clientListChanged();
 }
 
 void Model::removeClient(QString name)
@@ -116,31 +116,42 @@ void Model::removeClient(QString name)
 
 bool Model::changeClientName(QString oldName, QString newName)//TODO move to view.
 {
-   if(m_clientsList.keys().contains(oldName) && !m_clientsList.keys().contains(newName))
-   {
-      QString clientResult = m_clientsList.take(oldName);
-      if(m_clientsList.remove(oldName) > 0)
-      {
-         qWarning() << "Unable to remove client \"" << oldName << "\" from clients map.";
-         return false;
-      }
-      m_clientsList.insert(newName, clientResult);
-   } else
-   {
-      qWarning() << " Name \"" << newName << "\" is already in use";
-      return false;
-   }
+   Q_UNUSED(oldName);
+   Q_UNUSED(newName);
+   //RESTRICTED
+//   if(m_clientsList.keys().contains(oldName) && !m_clientsList.keys().contains(newName))
+//   {
+//      QString clientResult = m_clientsList.take(oldName);
+//      if(m_clientsList.remove(oldName) > 0)
+//      {
+//         qWarning() << "Unable to remove client \"" << oldName << "\" from clients map.";
+//         return false;
+//      }
+//      m_clientsList.insert(newName, clientResult);
+//   } else
+//   {
+//      qWarning() << " Name \"" << newName << "\" is already in use";
+//      return false;
+//   }
+   //RESTRICTED
+   return false;
 }
 
-void Model::setResultsForClient(QString clientName, QString result)
+void Model::setResultsForClient(QString clientName, CommandResult result)
 {
    if(m_clientsList.keys().contains(clientName))
    {
       m_clientsList[clientName] = result;
+      emit clientResultReady(clientName);
    } else
    {
       qWarning() << " No \"" << clientName << "\" in list.";
    }
+}
+
+const CommandResult Model::getResultForClient(QString clientName) const
+{
+   return m_clientsList.value(clientName);
 }
 
 const QStringList Model::getClientsNames()

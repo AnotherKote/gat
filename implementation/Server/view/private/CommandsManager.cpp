@@ -89,6 +89,7 @@ void CommandsManager::extendedDialogResult(int result)
    if(result == QDialog::Accepted)
    {
       m_pParameterData->setText(m_pExtendedParameterEditDialog->getParameterData());
+      saveParameterData();
    }
 }
 

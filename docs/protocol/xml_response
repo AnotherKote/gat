@@ -1,12 +1,20 @@
 <?xml version="1.0"?>
 <got protocol_version="1.0">
-   <command name="command_name" id="3">
-      <result> Error </result>
-      <process name="pcname" uid="" cpuusage=""/>
-      <data>Response data</data>
-      <data>data </data>
-      <data> .... </data>
+   <command name="command_name" successful="yes">
+      <data>data</data>
+      <data>data</data>
+      <data>...</data>
       ....
-      <data> ... </data>
+      <data>...</data>
    </command>
 </got>
+
+
+<?xml version="1.0"?>
+<got protocol_version="1.0">
+   <command name="command_name" successful="no">
+      <data>Error message</data>
+   </command>
+</got>
+
+

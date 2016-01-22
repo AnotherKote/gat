@@ -21,6 +21,8 @@ class MainScreen : public QMainWindow
    CommandsManager *m_pCommandsManager;
    ICommandsModel *m_pCmdModel;
    IClientsModel *m_pClientsModel;
+   QLabel *m_pResultedCommandName;
+   QTextEdit *m_pResult;
 
    void createWidgets();
    void connectSignalAndSlots();
@@ -29,10 +31,16 @@ class MainScreen : public QMainWindow
 public:
    explicit MainScreen(ICommandsModel *model, IClientsModel *clientsModel, QWidget *parent = 0);
    bool event(QEvent *event);
+
 public slots:
    void fillUserCommandsList();
    void refillClientsList();
    void buttonManageCommandsPressed();
+   void slotFire();
+   void clientResultChanged(QString clientName);
+
+signals:
+   void fireCommand(QString userCmdName, QStringList clients);
 };
 
 #endif // MAINSCREEN_H

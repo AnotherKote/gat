@@ -19,7 +19,10 @@ SOURCES += \
     Common/Commands/private/CmdGetProcessList.cpp \
     Common/gen/private/GEN_CommandFactory.cpp \
     Common/gen/private/GEN_CommandsHelper.cpp \
-    Server/model/private/Model.cpp
+    Server/model/private/Model.cpp \
+    Server/controller/private/Controller.cpp \
+    Server/controller/private/Server.cpp \
+    Common/private/ProtocolManager.cpp
 
 HEADERS += \
     Server/view/MainScreen.hpp \
@@ -32,7 +35,11 @@ HEADERS += \
     Common/gen/GEN_CommandsHelper.hpp \
     Server/model/Model.hpp \
     Server/model/ICommandsModel.hpp \
-    Server/model/IClientsModel.hpp
+    Server/model/IClientsModel.hpp \
+    Server/controller/Controller.hpp \
+    Server/controller/private/Server.hpp \
+    Common/ProtocolManager.hpp \
+    Server/model/CommandResult.hpp
 
 RESOURCES += \
     resources/res.qrc

@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <got protocol_version="1.0">
-   <command name="command_name" id="3" >
+   <command name="command_name">
       <param>firstParam</param>
       <param>secondParam</param>
        ...

@@ -17,10 +17,9 @@ class GEN_CommandFactory;
 class Model : public QObject,  public ICommandsModel, public IClientsModel
 {
    Q_OBJECT
-//   Q_INTERFACES(ICommandsModel)
 
    QMap<QString, ICommand*> m_userCommandsList;
-   QMap<QString, QString> m_clientsList;
+   QMap<QString, CommandResult> m_clientsList;
    QList<QString> m_connectedClients;
    GEN_CommandFactory *m_pFactory;
    GEN_CommandsHelper *m_pHelper;
@@ -50,12 +49,13 @@ public:
    virtual void addClient(QString name) override;
    virtual void removeClient(QString name) override;
    virtual bool changeClientName(QString oldName, QString newName) override;
-   virtual void setResultsForClient(QString clientName, QString result) override;
+   virtual void setResultsForClient(QString clientName, CommandResult result) override;
+   virtual const CommandResult getResultForClient(QString clientName) const override;
    virtual const QStringList getClientsNames() override;
 
 signals:
    void clientListChanged();
-
+   void clientResultReady(QString client);
 };
 
 #endif // MODEL_H

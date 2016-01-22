@@ -7,6 +7,7 @@
 #include <model/ICommandsModel.hpp>
 #include <model/IClientsModel.hpp>
 
+#include "model/CommandResult.hpp"
 #include "view/MainScreen.hpp"
 #include "view/CommandsManager.hpp"
 #include <QDebug>
@@ -24,6 +25,8 @@ MainScreen::MainScreen(ICommandsModel *model, IClientsModel *clientsModel, QWidg
    createWidgets();
    fillUserCommandsList();
    refillClientsList();
+
+   m_pClientsList->setSelectionMode(QAbstractItemView::ExtendedSelection); //QAbstractItemView::MultiSelection
 
    QHBoxLayout *pButtonsAndComboBox = new QHBoxLayout();
    pButtonsAndComboBox->addWidget(m_pUserCommands, 3);
@@ -46,10 +49,38 @@ MainScreen::MainScreen(ICommandsModel *model, IClientsModel *clientsModel, QWidg
 void MainScreen::buttonManageCommandsPressed()
 {
    qDebug() << "pressed";
-   m_pClientsModel->addClient("abfadfas;lfkaf");
-   m_pClientsModel->addClient("abfadfas;lfkaf");
-   m_pClientsModel->addClient("abfadfas;lfkaf1");
    m_pCommandsManager->open();
+}
+
+void MainScreen::slotFire()
+{
+   if(!m_pUserCommands->currentText().isEmpty())
+   {
+      QList<QListWidgetItem*> selectedItems = m_pClientsList->selectedItems();
+      QStringList selectedTexts;
+      for(QListWidgetItem* item: selectedItems)
+      {
+         selectedTexts.append(item->text());
+      }
+      if(selectedTexts.count() > 0)
+      {
+         emit fireCommand(m_pUserCommands->currentText(), selectedTexts);
+      }
+   }
+}
+
+void MainScreen::clientResultChanged(QString clientName)
+{
+   qDebug() << "Client result changed" << clientName;
+   CommandResult result = m_pClientsModel->getResultForClient(clientName);
+   QList<QListWidgetItem*> items = m_pClientsList->findItems(clientName, Qt::MatchExactly);
+   if(items.size() == 1)
+   {
+      QListWidgetItem *item = items.first();
+      item->setBackgroundColor((result.successful) ? Qt::green : Qt::red);
+   } else {
+      qDebug() << tr("Something terrible happen. Please contact developers.");
+   }
 }
 
 bool MainScreen::event(QEvent *event)
@@ -87,6 +118,9 @@ void MainScreen::connectSignalAndSlots()
    connect(m_pManageCommands, &QPushButton::clicked, this, &MainScreen::buttonManageCommandsPressed);
    connect(dynamic_cast<QObject*>(m_pCmdModel), SIGNAL(userCommandsListChanged()), this, SLOT(fillUserCommandsList()));
    connect(dynamic_cast<QObject*>(m_pClientsModel), SIGNAL(clientListChanged()), this, SLOT(refillClientsList()));
+   connect(dynamic_cast<QObject*>(m_pClientsModel), SIGNAL(clientResultReady(QString)), this, SLOT(clientResultChanged(QString)));
+   connect(m_pFire, &QPushButton::clicked, this, &MainScreen::slotFire);
+   connect(m_pClientsList, &QListWidget::currentTextChanged, [&](QString text){qDebug() << "cur text " << text;});
 }
 
 void MainScreen::resetTexts()

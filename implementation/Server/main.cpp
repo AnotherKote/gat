@@ -1,13 +1,13 @@
 #include <QApplication>
-#include <QTime>
-#include <QRegularExpression>
-//<debug>
-#include "view/MainScreen.hpp"
-#include "Server/model/Model.hpp"
+
+#include "controller/Controller.hpp"
 #include <QDebug>
-#include "Common/gen/GEN_CommandFactory.hpp"
-#include "Common/gen/GEN_CommandsHelper.hpp"
-//</debug>
+////<debug>
+//#include "view/MainScreen.hpp"
+//#include "Server/model/Model.hpp"
+//#include "Common/gen/GEN_CommandFactory.hpp"
+//#include "Common/gen/GEN_CommandsHelper.hpp"
+////</debug>
 
 void myMessageOutput(QtMsgType type, const QString &msg)
 {
@@ -40,12 +40,8 @@ int main(int argc, char *argv[])
    QApplication server(argc, argv);
    qSetMessagePattern("[%{time process}] %{function}(line:%{line})\t%{message}"); //      qInstallMessageHandler(myMessageOutput);
 
-   Model *model = new Model();
-   IClientsModel *clientsModel = static_cast<IClientsModel*>(model);
-   ICommandsModel *cmdModel = static_cast<ICommandsModel*>(model);
-
-   MainScreen mainScreen(cmdModel, clientsModel);
-   mainScreen.show();
+   Controller c;
+   c.show();
 
    //Controller controller;
    return server.exec();
