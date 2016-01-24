@@ -11,6 +11,7 @@ class QLineEdit;
 class QLabel;
 class ExtendParametrEdit;
 class ICommandsModel;
+class QSettings;
 
 class CommandsManager : public QDialog
 {
@@ -41,9 +42,16 @@ class CommandsManager : public QDialog
 
    ICommandsModel *m_pCmdModel;
 
+   QSettings *m_pSettings;
+
+   const QString m_folderName;
+   const QString m_cmdAbstractName;
+
    void createWidgets();
    void connectSignalAndSlots();
    void resetTexts();
+   void saveSettings();
+   void loadSettings();
 public:
    explicit CommandsManager(ICommandsModel *cmdModel, QWidget *parent = 0);
 
@@ -65,7 +73,6 @@ public slots:
    void loadCommand(QString userCmdName);
    void removeCommand(QString userCmdName);
    void clearAll();
-   void enableRemoveButton(); //current index changed
    // QWidget interface
 protected:
    void showEvent(QShowEvent *);

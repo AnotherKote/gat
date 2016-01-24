@@ -4,13 +4,15 @@
 #include <QHBoxLayout>
 #include <QListWidget>
 #include <QEvent>
-#include <model/ICommandsModel.hpp>
-#include <model/IClientsModel.hpp>
+#include <QLabel>
+#include <QTextEdit>
+#include <QDebug>
 
+#include "model/ICommandsModel.hpp"
+#include "model/IClientsModel.hpp"
 #include "model/CommandResult.hpp"
 #include "view/MainScreen.hpp"
 #include "view/CommandsManager.hpp"
-#include <QDebug>
 
 MainScreen::MainScreen(ICommandsModel *model, IClientsModel *clientsModel, QWidget *parent)
 : QMainWindow(parent)
@@ -21,27 +23,35 @@ MainScreen::MainScreen(ICommandsModel *model, IClientsModel *clientsModel, QWidg
 , m_pCommandsManager(nullptr)
 , m_pCmdModel(model)
 , m_pClientsModel(clientsModel)
+, m_pResultedCommandName(nullptr)
+, m_pResult(nullptr)
 {
    createWidgets();
+   connectSignalAndSlots();
    fillUserCommandsList();
    refillClientsList();
 
    m_pClientsList->setSelectionMode(QAbstractItemView::ExtendedSelection); //QAbstractItemView::MultiSelection
+   m_pResult->setReadOnly(true);
 
    QHBoxLayout *pButtonsAndComboBox = new QHBoxLayout();
    pButtonsAndComboBox->addWidget(m_pUserCommands, 3);
    pButtonsAndComboBox->addWidget(m_pFire, 2);
    pButtonsAndComboBox->addWidget(m_pManageCommands, 0);
 
-   QGridLayout *pMainLayout = new QGridLayout();
-   pMainLayout->addLayout(pButtonsAndComboBox, 0, 0, 1, 4);
-   pMainLayout->addWidget(m_pClientsList, 0, 5, 10, 2);
+   QVBoxLayout *pLeftSideLayout = new QVBoxLayout();
+   pLeftSideLayout->addLayout(pButtonsAndComboBox);
+   pLeftSideLayout->addWidget(m_pResultedCommandName);
+   pLeftSideLayout->addWidget(m_pResult);
+
+   QHBoxLayout *pMainLayout = new QHBoxLayout();
+   pMainLayout->addLayout(pLeftSideLayout, 2);
+   pMainLayout->addWidget(m_pClientsList, 1);
 
    QWidget *centralWidget = new QWidget();
    centralWidget->setLayout(pMainLayout);
    setCentralWidget(centralWidget);
 
-   connectSignalAndSlots();
    resetTexts();
    setMinimumSize(QSize(640,480)); //TODO get rid of the magic numbers
 }
@@ -81,6 +91,10 @@ void MainScreen::clientResultChanged(QString clientName)
    } else {
       qDebug() << tr("Something terrible happen. Please contact developers.");
    }
+   if(clientName == m_pClientsList->currentItem()->text())
+   {
+      currentSelectedClientChanged(clientName);
+   }
 }
 
 bool MainScreen::event(QEvent *event)
@@ -92,9 +106,31 @@ bool MainScreen::event(QEvent *event)
    return QMainWindow::event(event);
 }
 
+void MainScreen::currentSelectedClientChanged(QString clientName)
+{
+   m_pResult->clear();
+   m_pResultedCommandName->setText("");
+   CommandResult result = m_pClientsModel->getResultForClient(clientName);
+   m_pResultedCommandName->setText(result.cmdName);
+   for(QString resultString: result.result)
+   {
+      m_pResult->setText(m_pResult->toPlainText().append("\n").append(resultString));
+   }
+   if(m_pResultedCommandName->text().isEmpty())
+   {
+      m_pResultedCommandName->setText(tr("No commands was send to this client."));
+   }
+   if(m_pResult->toPlainText().isEmpty())
+   {
+      m_pResult->setText(tr("No result output."));
+   }
+}
+
 void MainScreen::fillUserCommandsList()
 {
+   qDebug();
    m_pUserCommands->clear();
+   qDebug() << m_pCmdModel->userCommandsList().size();
    m_pUserCommands->addItems(m_pCmdModel->userCommandsList());
 }
 
@@ -111,31 +147,24 @@ void MainScreen::createWidgets()
    m_pManageCommands = new QPushButton(this);
    m_pClientsList = new QListWidget(this);
    m_pCommandsManager = new CommandsManager(m_pCmdModel, this);
+   m_pResultedCommandName = new QLabel(this);
+   m_pResult = new QTextEdit(this);
+
 }
 
 void MainScreen::connectSignalAndSlots()
 {
+   qDebug();
    connect(m_pManageCommands, &QPushButton::clicked, this, &MainScreen::buttonManageCommandsPressed);
    connect(dynamic_cast<QObject*>(m_pCmdModel), SIGNAL(userCommandsListChanged()), this, SLOT(fillUserCommandsList()));
    connect(dynamic_cast<QObject*>(m_pClientsModel), SIGNAL(clientListChanged()), this, SLOT(refillClientsList()));
    connect(dynamic_cast<QObject*>(m_pClientsModel), SIGNAL(clientResultReady(QString)), this, SLOT(clientResultChanged(QString)));
    connect(m_pFire, &QPushButton::clicked, this, &MainScreen::slotFire);
-   connect(m_pClientsList, &QListWidget::currentTextChanged, [&](QString text){qDebug() << "cur text " << text;});
+   connect(m_pClientsList, &QListWidget::currentTextChanged, this, &MainScreen::currentSelectedClientChanged);
 }
 
 void MainScreen::resetTexts()
 {
-   int curListIndex = 0;
-
    m_pFire->setText(tr("Fire", "Fire command to clients"));
    m_pManageCommands->setText(tr("Manage commands", "Open user commands manager"));
-
-   if(m_pUserCommands->count() > 0)
-   {
-      curListIndex = m_pUserCommands->currentIndex();
-      m_pUserCommands->clear();
-   }
-
-   m_pUserCommands->setCurrentIndex(curListIndex);
-   curListIndex = 0;
 }

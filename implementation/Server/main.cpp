@@ -38,7 +38,10 @@ int main(int argc, char *argv[])
 {
 
    QApplication server(argc, argv);
+
    qSetMessagePattern("[%{time process}] %{function}(line:%{line})\t%{message}"); //      qInstallMessageHandler(myMessageOutput);
+   QApplication::setOrganizationName("AnotherKote'sSoftware");
+   QApplication::setApplicationName("GATServer");
 
    Controller c;
    c.show();

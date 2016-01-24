@@ -9,6 +9,8 @@ class QComboBox;
 class QPushButton;
 class QListWidget;
 class CommandsManager;
+class QLabel;
+class QTextEdit;
 
 class MainScreen : public QMainWindow
 {
@@ -32,13 +34,15 @@ public:
    explicit MainScreen(ICommandsModel *model, IClientsModel *clientsModel, QWidget *parent = 0);
    bool event(QEvent *event);
 
+private slots:
+   void currentSelectedClientChanged(QString clientName);
+
 public slots:
    void fillUserCommandsList();
    void refillClientsList();
    void buttonManageCommandsPressed();
    void slotFire();
    void clientResultChanged(QString clientName);
-
 signals:
    void fireCommand(QString userCmdName, QStringList clients);
 };

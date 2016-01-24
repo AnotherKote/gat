@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
    Q_UNUSED(systemTray);
 
    Invoker invoker;
-   invoker.run("localhost", 10000, 1000);
+   invoker.run("localhost", 10001, 1000);
 //   Q_UNUSED(invoker);
 //   NetworkManager netManager("localhost", 10000);
 

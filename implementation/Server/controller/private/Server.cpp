@@ -10,9 +10,10 @@ Server::Server(QObject *parent)
    : QObject(parent)
    , m_pTcpServer(nullptr)
    , m_pConnectedSockets()
+   , m_blockSize(0)
 {
    m_pTcpServer = new QTcpServer(this);
-   if(!m_pTcpServer->listen(QHostAddress::Any, 10000))
+   if(!m_pTcpServer->listen(QHostAddress::Any, 10001))
    {
       qCritical() << "Can't listen to port 10000";
       m_pTcpServer->close();
@@ -31,6 +32,7 @@ void Server::slotNewConnection()
    QTcpSocket *connection = m_pTcpServer->nextPendingConnection();
    qDebug() << "new connection " << connection->peerName() << " :: " << connection->peerAddress();
 
+   //TODO fix me
    if(m_pConnectedSockets.keys().contains(connection->peerAddress().toString()))
    {
       qDebug() << "More then one clients connected from one IP.";
@@ -49,6 +51,7 @@ void Server::slotNewConnection()
 
 void Server::slotReadClient()
 {
+   qDebug();
    QTcpSocket *pSocket = dynamic_cast<QTcpSocket*>(sender());
    if(pSocket)
    {
@@ -69,7 +72,7 @@ void Server::slotReadClient()
          }
          if(pSocket->bytesAvailable() < m_blockSize)
          {
-            qDebug() << "Available bytes in socket less then m_blockSize. Aborting read loop.";
+            qDebug() << pSocket->bytesAvailable() << " < " << m_blockSize << " :: Available bytes in socket less then m_blockSize. Aborting read loop.";
             break;
          }
          QString receivedData;

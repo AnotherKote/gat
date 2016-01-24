@@ -96,5 +96,7 @@ void NetworkManager::slotSendToServer(QString data)
    out.device()->seek(0);
    out << quint16(dataToSend.size() - sizeof(quint16));
    m_pSocket->write(dataToSend);
+   qDebug() << "send " << quint16(dataToSend.size() - sizeof(quint16));
+   qDebug() << "send " << dataToSend.size();
 }
 

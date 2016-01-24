@@ -9,6 +9,7 @@
 #include <QLabel>
 #include <QResizeEvent>
 #include <QMessageBox>
+#include <QSettings>
 
 #include "view/ExtendParametrEdit.hpp"
 #include "view/CommandsManager.hpp"
@@ -32,15 +33,20 @@ CommandsManager::CommandsManager(ICommandsModel *cmdModel, QWidget *parent)
 , m_pCommandDescription(nullptr)
 , m_pExtendedParameterEditDialog(nullptr)
 , m_pCmdModel(cmdModel)
+, m_pSettings(nullptr)
+, m_folderName("UserCommands")
+, m_cmdAbstractName("Command")
+
 {
    createWidgets();
+   m_pSettings = new QSettings(this);
    resetTexts();
+   connectSignalAndSlots();
    refillAbstractCommandsList();
    refillParameterNamesList();
    refillUserCommandsList();
    refillCommandDescription();
-   connectSignalAndSlots();
-   enableRemoveButton();
+   loadSettings();
 
    m_pExtendedParameterDataEdit->setIcon(QIcon(":/icons/edit.png"));
    m_pCommandDescription->setReadOnly(true);
@@ -69,6 +75,7 @@ CommandsManager::CommandsManager(ICommandsModel *cmdModel, QWidget *parent)
    QHBoxLayout *pMainLayout = new QHBoxLayout;
    pMainLayout->addLayout(pLeftSideLayout);
    pMainLayout->addWidget(m_pCommandDescription);
+
 
    setMinimumSize(QSize(600, 400));
    setLayout(pMainLayout);
@@ -194,7 +201,6 @@ void CommandsManager::saveCommand()
    {
       message(errorMessage);
    }
-   enableRemoveButton();
 }
 
 void CommandsManager::message(QString message)
@@ -242,7 +248,6 @@ void CommandsManager::loadCommand(QString userCmdName)
 void CommandsManager::removeCommand(QString userCmdName)
 {
    m_pCmdModel->removeCommand(userCmdName);
-   enableRemoveButton();
 }
 
 void CommandsManager::clearAll()
@@ -250,11 +255,6 @@ void CommandsManager::clearAll()
    m_pAbstractCommands->setCurrentIndex(0);
    m_pUserCommandName->clear();
    m_pParameterData->clear();
-}
-
-void CommandsManager::enableRemoveButton()
-{
-   m_pRemoveCommand->setEnabled(m_pUserCommandsList->count() > 0);
 }
 
 void CommandsManager::refillCommandDescription(QString currentAbstractCommand)
@@ -324,6 +324,7 @@ void CommandsManager::connectSignalAndSlots()
          removeCommand(selectedItems.front()->text());
       }
    });
+   connect(this, &CommandsManager::finished, this, &CommandsManager::saveSettings);
 
    //   connect(m_pAbstractCommands, &QComboBox::currentTextChanged, [&](QString index){
 //      qDebug() << "int " << index;
@@ -337,4 +338,68 @@ void CommandsManager::resetTexts()
    m_pNewCommand->setText(tr("New", "create new command"));
    m_pSaveCommand->setText(tr("Save", "Save command"));
    m_pRemoveCommand->setText(tr("Remove", "Remove command"));
+}
+
+void CommandsManager::saveSettings()
+{
+   qDebug();
+   m_pSettings->remove(m_folderName);
+   m_pSettings->beginGroup(m_folderName);
+   for(QString userCmd: m_pCmdModel->userCommandsList())
+   {
+      const ICommand *curCmd = m_pCmdModel->getUserCommand(userCmd);
+      if(curCmd && (curCmd->getParameterNames().size() == curCmd->getParametersData().size()))
+      {
+         m_pSettings->beginGroup(userCmd);
+         m_pSettings->setValue(m_cmdAbstractName, curCmd->getName());
+         for(int i = 0; i < curCmd->getParameterNames().size(); i++)
+         {
+            m_pSettings->setValue(curCmd->getParameterNames().at(i),
+                                  curCmd->getParametersData().at(i));
+         }
+         m_pSettings->endGroup();
+      }
+   }
+   m_pSettings->endGroup();
+}
+
+void CommandsManager::loadSettings()
+{
+   qDebug();
+   m_pSettings->beginGroup(m_folderName);
+   for(QString userCmdName: m_pSettings->childGroups())
+   {
+      m_pSettings->beginGroup(userCmdName);
+      QString cmdName;
+      QVector<QString> parameters;
+      cmdName = m_pSettings->value(m_cmdAbstractName).toString();
+      if(!cmdName.isEmpty())
+      {
+         for(QString parameterName: m_pCmdModel->commandParameterNames(cmdName))
+         {
+            QString parameterData = m_pSettings->value(parameterName).toString();
+            if(!parameterData.isEmpty())
+            {
+               parameters.push_back(parameterData);
+            }else
+            {
+               qWarning() << "Empty parameter";
+            }
+         }
+         QString errorMessage;
+         qDebug() << "load command: " << userCmdName;
+         qDebug() << "Abstract command: " << cmdName;
+         qDebug() << "parameters: " << parameters;
+         if(!m_pCmdModel->saveUserCommand(userCmdName,
+                                      cmdName,
+                                      parameters,
+                                      errorMessage))
+         {
+            message(errorMessage);
+         }
+
+      }
+      m_pSettings->endGroup();
+   }
+   m_pSettings->endGroup();
 }

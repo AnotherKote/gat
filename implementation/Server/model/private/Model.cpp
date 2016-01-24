@@ -98,6 +98,7 @@ bool Model::removeCommand(QString cmdName)
 void Model::addClient(QString name)
 {
    qDebug() << " ( name : " << name << " )";
+
    if(m_clientsList.keys().contains(name))
    {
       qWarning() << "Unable to add client \"" << name << "\". Already in list";
@@ -118,7 +119,7 @@ bool Model::changeClientName(QString oldName, QString newName)//TODO move to vie
 {
    Q_UNUSED(oldName);
    Q_UNUSED(newName);
-   //RESTRICTED
+   //RESTRICTED TODO add this feature.
 //   if(m_clientsList.keys().contains(oldName) && !m_clientsList.keys().contains(newName))
 //   {
 //      QString clientResult = m_clientsList.take(oldName);
