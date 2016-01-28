@@ -2,6 +2,8 @@
 
 #include "Common/Commands/CmdGetProcessList.hpp"
 #include "Common/Commands/CmdShowMessage.hpp"
+#include "Common/Commands/CmdIsProcessRunning.hpp"
+#include "Common/Commands/CmdKillProcessByName.hpp"
 
 GEN_CommandsHelper::GEN_CommandsHelper()
 : m_availableCommands()
@@ -10,6 +12,8 @@ GEN_CommandsHelper::GEN_CommandsHelper()
 {
    m_availableCommands.append(new CmdGetProcessList);
    m_availableCommands.append(new CmdShowMessage);
+   m_availableCommands.append(new CmdIsProcessRunning);
+   m_availableCommands.append(new CmdKillProcessByName);
 
    for(auto it: m_availableCommands)
    {

@@ -5,6 +5,8 @@
 #include <QDebug>
 #include "Common/Commands/CmdGetProcessList.hpp"
 #include "Common/Commands/CmdShowMessage.hpp"
+#include "Common/Commands/CmdIsProcessRunning.hpp"
+#include "Common/Commands/CmdKillProcessByName.hpp"
 
 GEN_CommandFactory::GEN_CommandFactory()
 : m_pHelper(nullptr)
@@ -33,6 +35,12 @@ ICommand *GEN_CommandFactory::createCommand(QString cmdName, QVector<QString> pa
       } else if(cmdName.compare("Get process list")  == 0)
       {
          retCommand = new CmdGetProcessList();
+      } else if(cmdName.compare("Is process running")  == 0)
+      {
+         retCommand = new CmdIsProcessRunning();
+      } else if(cmdName.compare("Kill process by name") == 0)
+      {
+         retCommand = new CmdKillProcessByName();
       }
 
       if(!retCommand->setParameters(parameters))

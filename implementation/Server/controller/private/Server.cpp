@@ -15,10 +15,10 @@ Server::Server(QObject *parent)
    m_pTcpServer = new QTcpServer(this);
    if(!m_pTcpServer->listen(QHostAddress::Any, 10001))
    {
-      qCritical() << "Can't listen to port 10000";
+      qCritical() << "Can't listen to port 10001";
       m_pTcpServer->close();
    }
-   qDebug() << "Server ready on port 10000";
+   qDebug() << "Server ready on port 10001";
    connect(m_pTcpServer, &QTcpServer::newConnection, this, &Server::slotNewConnection);
 }
 
@@ -104,7 +104,7 @@ void Server::slotDisconnected()
 
 void Server::slotSendToClient(QString name, QString data)
 {
-   qDebug() << " name:" << name << " data:"<< data;
+   qDebug() << " name:" << name;
    auto it = m_pConnectedSockets.find(name);
    if(it != m_pConnectedSockets.end())
    {

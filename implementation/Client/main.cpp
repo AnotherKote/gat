@@ -1,6 +1,8 @@
 #include <QApplication>
+#include <QRegExp>
 #include <QStringList>
-//#include <QString>
+#include <QString>
+#include <QFile>
 #include <QDebug>
 
 #include "Common/gen/GEN_CommandFactory.hpp"
@@ -12,69 +14,56 @@
 #include "NetworkManager.hpp"
 #include "Common/ProtocolManager.hpp"
 
-void myMessageOutput(QtMsgType type, const QString &msg)
+QFile outFile("GAT_Client_log.txt");
+
+void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
+   QTextStream ts(&outFile);
    QByteArray localMsg = msg.toLocal8Bit();
    switch (type) {
    case QtDebugMsg:
-      fprintf(stderr, "%s", localMsg.constData());
-   break;
-   case QtInfoMsg:
-      fprintf(stderr, "%s", localMsg.constData());
+      ts << QString("D: %1\t%2\n").arg(context.function).arg(localMsg.constData());
    break;
    case QtWarningMsg:
-      fprintf(stderr, "%s", localMsg.constData());
+      ts << QString("W: %1\t%2\n").arg(context.function).arg(localMsg.constData());
    break;
    case QtCriticalMsg:
-      fprintf(stderr, "%s", localMsg.constData());
+      ts << QString("C: %1\t%2\n").arg(context.function).arg(localMsg.constData());
    break;
    case QtFatalMsg:
-      fprintf(stderr, "%s", localMsg.constData());
-      //flush
+      ts << QString("F: %1\t%2\n").arg(context.function).arg(localMsg.constData());
+      ts.flush();
       abort();
    }
+   ts.flush();
    return;
 }
 
 int main(int argc, char *argv[])
 {
    QApplication client(argc, argv);
+   outFile.open(QIODevice::WriteOnly);
+   QStringList argList = client.arguments();
+   QString serverIP("localhost");
+   if(argList.count() > 1)
+   {
+      int index = argList.lastIndexOf(QRegExp("ip=([0-9]{1,3}[\.]){3}[0-9]{1,3}"));
 
-   qSetMessagePattern("[%{time process}] %{function}(line:%{line})\t%{message}"); //      qInstallMessageHandler(myMessageOutput);
+      if(index != -1)
+      {
+         serverIP = argList.at(index).split("=").last();
+      }
+   }
+
+//   qSetMessagePattern("[%{time process}] %{function}(line:%{line})\t%{message}"); //      qInstallMessageHandler(myMessageOutput);
+   qInstallMessageHandler(myMessageOutput);
 
    SystemTray systemTray;
    Q_UNUSED(systemTray);
 
    Invoker invoker;
-   invoker.run("localhost", 10001, 1000);
-//   Q_UNUSED(invoker);
-//   NetworkManager netManager("localhost", 10000);
+   invoker.run(serverIP, 10001, 1000);
 
-//   ICommand *cmd = dynamic_cast<ICommand*>(GEN_CommandFactory().createCommand("Show message box",QVector<QString>{"message header", "message to show", "1000"}));
-
-//   ProtocolManager p;
-//   QString data = p.encode(cmd);
-//   qDebug() << data;
-//   data = "ada";
-//   QString cmdName;
-//   QVector<QString> params;
-//   QString error;
-//   if(p.decode(data, cmdName, params, error))
-//      qDebug() << cmdName << "::" << params;
-//   else
-//      qDebug() << error;
-
-
-//   GEN_CommandFactory factory;
-
-//   IExecutableCommand *pCmd = factory.createCommand("Show message box", QVector<QString>{"header", "Сообщение умопомрачениеСообщение умопомрачениеСообщение умопомрачениеСообщение умопомрачениеСообщение умопомрачениеСообщение умопомрачениеСообщение умопомрачениеСообщение умопомрачениеСообщение умопомрачениеСообщение умопомрачениеСообщение умопомрачениеСообщение умопомрачениеСообщение умопомрачениеСообщение умопомрачениеСообщение умопомрачениеСообщение умопомрачениеСообщение умопомрачениеСообщение умопомрачениеСообщение умопомрачениеСообщение умопомрачениеСообщение умопомрачениеСообщение умопомрачениеСообщение умопомрачениеСообщение умопомрачениеСообщение умопомрачениеСообщение умопомрачениеСообщение умопомрачениеСообщение умопомрачениеСообщение умопомрачениеСообщение умопомрачениеСообщение умопомрачениеСообщение умопомрачениеСообщение умопомрачениеСообщение умопомрачениеСообщение умопомрачение", "20"});
-//   if(pCmd->execute())
-//   {
-//      qDebug() << pCmd->results();
-//   } else
-//   {
-//      qDebug() << pCmd->errorMessage();
-//   }
    QApplication::setQuitOnLastWindowClosed(false);
 
    return client.exec();

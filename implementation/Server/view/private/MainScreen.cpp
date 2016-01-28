@@ -32,7 +32,6 @@ MainScreen::MainScreen(ICommandsModel *model, IClientsModel *clientsModel, QWidg
    refillClientsList();
 
    m_pClientsList->setSelectionMode(QAbstractItemView::ExtendedSelection); //QAbstractItemView::MultiSelection
-   m_pResult->setReadOnly(true);
 
    QHBoxLayout *pButtonsAndComboBox = new QHBoxLayout();
    pButtonsAndComboBox->addWidget(m_pUserCommands, 3);
@@ -112,17 +111,16 @@ void MainScreen::currentSelectedClientChanged(QString clientName)
    m_pResultedCommandName->setText("");
    CommandResult result = m_pClientsModel->getResultForClient(clientName);
    m_pResultedCommandName->setText(result.cmdName);
-   for(QString resultString: result.result)
-   {
-      m_pResult->setText(m_pResult->toPlainText().append("\n").append(resultString));
-   }
+   qDebug() << "in";
+   m_pResult->addItems(result.result);
+   qDebug() << "out";
    if(m_pResultedCommandName->text().isEmpty())
    {
       m_pResultedCommandName->setText(tr("No commands was send to this client."));
    }
-   if(m_pResult->toPlainText().isEmpty())
+   if(m_pResult->count() == 0)
    {
-      m_pResult->setText(tr("No result output."));
+      m_pResult->addItem(tr("No result output."));
    }
 }
 
@@ -148,7 +146,7 @@ void MainScreen::createWidgets()
    m_pClientsList = new QListWidget(this);
    m_pCommandsManager = new CommandsManager(m_pCmdModel, this);
    m_pResultedCommandName = new QLabel(this);
-   m_pResult = new QTextEdit(this);
+   m_pResult = new QListWidget(this);
 
 }
 

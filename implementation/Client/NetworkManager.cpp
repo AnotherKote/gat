@@ -23,6 +23,7 @@ NetworkManager::NetworkManager(QObject *parent)
 
 void NetworkManager::start(QString host, int port, int reconnectionInterval )
 {
+   qDebug() << "connecting to server on " << host << "::" << port << " reconnection interval = " << reconnectionInterval/1000 << "seconds";
    if(!host.isEmpty() && port != 0 && reconnectionInterval != 0)
    {
       m_pTimer->setInterval(reconnectionInterval);

@@ -21,7 +21,7 @@ WinExecutor::~WinExecutor()
    m_pPopup->deleteLater();
 }
 
-bool WinExecutor::getRunningProcessesList(QStringList &out_data, QString &out_error)
+bool WinExecutor::getRunningProcessesList(QStringList &out_data, QString &out_error, QString split)
 {
    HANDLE hProcessSnap;
    PROCESSENTRY32 pe32;
@@ -53,7 +53,7 @@ bool WinExecutor::getRunningProcessesList(QStringList &out_data, QString &out_er
    // display information about each process in turn
    do
    {
-      out_data << QString::fromWCharArray(pe32.szExeFile) + "::" + QString::number(pe32.th32ProcessID);
+      out_data << QString::fromWCharArray(pe32.szExeFile) + split + QString::number(pe32.th32ProcessID);
 //      out_name.append();
 //      out_pids.append(pe32.th32ProcessID);
 
@@ -61,6 +61,32 @@ bool WinExecutor::getRunningProcessesList(QStringList &out_data, QString &out_er
 
    CloseHandle( hProcessSnap );
    return true;
+}
+
+bool WinExecutor::killProcessByName(QString name, QString &out_error)
+{
+   HANDLE hSnapShot = CreateToolhelp32Snapshot(TH32CS_SNAPALL, 0);
+   PROCESSENTRY32 pEntry;
+   pEntry.dwSize = sizeof (pEntry);
+   BOOL hRes = Process32First(hSnapShot, &pEntry);
+   while (hRes)
+   {
+      if (QString::fromWCharArray(pEntry.szExeFile).compare(name, Qt::CaseInsensitive) == 0)
+      {
+         HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, 0,
+                                       (DWORD) pEntry.th32ProcessID);
+         if (hProcess != NULL)
+         {
+            TerminateProcess(hProcess, 9);
+            CloseHandle(hProcess);
+            return true;
+         }
+      }
+      hRes = Process32Next(hSnapShot, &pEntry);
+   }
+   CloseHandle(hSnapShot);
+   out_error = "No process with name \"" + name + "\" was found.";
+   return false;
 }
 
 void WinExecutor::showMessage(QString header, QString body, int seconds)

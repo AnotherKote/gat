@@ -12,7 +12,8 @@ class WinExecutor : public QObject
 public:
    explicit WinExecutor(QObject *parent = 0);
    ~WinExecutor();
-   bool getRunningProcessesList(QStringList &out_data, QString &out_error);
+   bool getRunningProcessesList(QStringList &out_data, QString &out_error, QString split = "::");
+   bool killProcessByName(QString name, QString &out_error);
    void showMessage(QString header, QString body, int seconds);
 };
 

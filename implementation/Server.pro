@@ -22,7 +22,9 @@ SOURCES += \
     Server/model/private/Model.cpp \
     Server/controller/private/Controller.cpp \
     Server/controller/private/Server.cpp \
-    Common/private/ProtocolManager.cpp
+    Common/private/ProtocolManager.cpp \
+    Common/Commands/private/CmdIsProcessRunning.cpp \
+    Common/Commands/private/CmdKillProcessByName.cpp
 
 HEADERS += \
     Server/view/MainScreen.hpp \
@@ -39,7 +41,9 @@ HEADERS += \
     Server/controller/Controller.hpp \
     Server/controller/private/Server.hpp \
     Common/ProtocolManager.hpp \
-    Server/model/CommandResult.hpp
+    Server/model/CommandResult.hpp \
+    Common/Commands/CmdIsProcessRunning.hpp \
+    Common/Commands/CmdKillProcessByName.hpp
 
 RESOURCES += \
     resources/res.qrc

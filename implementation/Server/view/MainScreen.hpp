@@ -10,7 +10,7 @@ class QPushButton;
 class QListWidget;
 class CommandsManager;
 class QLabel;
-class QTextEdit;
+//class QTextEdit;
 
 class MainScreen : public QMainWindow
 {
@@ -24,7 +24,7 @@ class MainScreen : public QMainWindow
    ICommandsModel *m_pCmdModel;
    IClientsModel *m_pClientsModel;
    QLabel *m_pResultedCommandName;
-   QTextEdit *m_pResult;
+   QListWidget *m_pResult;
 
    void createWidgets();
    void connectSignalAndSlots();

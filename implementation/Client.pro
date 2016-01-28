@@ -23,7 +23,9 @@ SOURCES += \
     Common/gen/private/GEN_CommandsHelper.cpp \
     Common/gen/private/GEN_CommandFactory.cpp \
     Client/NetworkManager.cpp \
-    Common/private/ProtocolManager.cpp
+    Common/private/ProtocolManager.cpp \
+    Common/Commands/private/CmdIsProcessRunning.cpp \
+    Common/Commands/private/CmdKillProcessByName.cpp
 
 HEADERS += \
     Client/Invoker.hpp \
@@ -37,7 +39,9 @@ HEADERS += \
     Common/gen/GEN_CommandFactory.hpp \
     Common/gen/GEN_CommandsHelper.hpp \
     Client/NetworkManager.hpp \
-    Common/ProtocolManager.hpp
+    Common/ProtocolManager.hpp \
+    Common/Commands/CmdIsProcessRunning.hpp \
+    Common/Commands/CmdKillProcessByName.hpp
 
 RESOURCES += \
     resources/res.qrc

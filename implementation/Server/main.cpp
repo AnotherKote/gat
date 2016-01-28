@@ -1,4 +1,5 @@
 #include <QApplication>
+#include <QFile>
 
 #include "controller/Controller.hpp"
 #include <QDebug>
@@ -9,27 +10,28 @@
 //#include "Common/gen/GEN_CommandsHelper.hpp"
 ////</debug>
 
-void myMessageOutput(QtMsgType type, const QString &msg)
+QFile outFile("GAT_Server_log.txt");
+
+void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
+   QTextStream ts(&outFile);
    QByteArray localMsg = msg.toLocal8Bit();
    switch (type) {
    case QtDebugMsg:
-      fprintf(stderr, "%s", localMsg.constData());
-   break;
-   case QtInfoMsg:
-      fprintf(stderr, "%s", localMsg.constData());
+      ts << QString("D: %1\t%2\n").arg(context.function).arg(localMsg.constData());
    break;
    case QtWarningMsg:
-      fprintf(stderr, "%s", localMsg.constData());
+      ts << QString("W: %1\t%2\n").arg(context.function).arg(localMsg.constData());
    break;
    case QtCriticalMsg:
-      fprintf(stderr, "%s", localMsg.constData());
+      ts << QString("C: %1\t%2\n").arg(context.function).arg(localMsg.constData());
    break;
    case QtFatalMsg:
-      fprintf(stderr, "%s", localMsg.constData());
-      //flush
+      ts << QString("F: %1\t%2\n").arg(context.function).arg(localMsg.constData());
+      ts.flush();
       abort();
    }
+   ts.flush();
    return;
 }
 
@@ -38,8 +40,9 @@ int main(int argc, char *argv[])
 {
 
    QApplication server(argc, argv);
-
-   qSetMessagePattern("[%{time process}] %{function}(line:%{line})\t%{message}"); //      qInstallMessageHandler(myMessageOutput);
+   outFile.open(QIODevice::WriteOnly);
+//   qSetMessagePattern("[%{time process}] %{function}(line:%{line})\t%{message}"); //      ;
+   qInstallMessageHandler(myMessageOutput);
    QApplication::setOrganizationName("AnotherKote'sSoftware");
    QApplication::setApplicationName("GATServer");
 
