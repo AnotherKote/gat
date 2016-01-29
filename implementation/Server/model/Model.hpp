@@ -2,17 +2,18 @@
 #define MODEL_H
 
 #include "Common/Commands/ICommand.hpp"
+#include "Server/model/ICommandsModel.hpp"
+#include "Server/model/IClientsModel.hpp"
+#include "Common/CommandHelper.hpp"
 
 #include <QObject>
 #include <QMap>
 #include <QList>
 #include <QVector>
-#include <Server/model/ICommandsModel.hpp>
-#include <Server/model/IClientsModel.hpp>
+
 //#include <QSharedPointer> //TODO
 
-class GEN_CommandsHelper;
-class GEN_CommandFactory;
+class CommandHelper;
 
 class Model : public QObject,  public ICommandsModel, public IClientsModel
 {
@@ -21,8 +22,7 @@ class Model : public QObject,  public ICommandsModel, public IClientsModel
    QMap<QString, ICommand*> m_userCommandsList;
    QMap<QString, CommandResult> m_clientsList;
    QList<QString> m_connectedClients;
-   GEN_CommandFactory *m_pFactory;
-   GEN_CommandsHelper *m_pHelper;
+   const CommandHelper &m_helper;
 
 public:
    Model(QObject *parent = 0);

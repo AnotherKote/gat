@@ -1,6 +1,4 @@
 #include "Server/model/Model.hpp"
-#include "Common/gen/GEN_CommandFactory.hpp"
-#include "Common/gen/GEN_CommandsHelper.hpp"
 
 #include <QDebug>
 
@@ -11,22 +9,12 @@ Model::Model(QObject *parent)
 , m_userCommandsList()
 , m_clientsList()
 , m_connectedClients()
-, m_pFactory(nullptr)
-, m_pHelper(nullptr)
+, m_helper(CommandHelper::instance())
 {
-   m_pFactory = new GEN_CommandFactory;
-   m_pHelper = new GEN_CommandsHelper;
-   if(!m_pFactory || !m_pHelper)
-   {
-      qFatal("Unable to create factory or helper.");
-      //      m_pFactory = nullptr;
-   }
 }
 
 Model::~Model()
 {
-   delete m_pFactory;
-   delete m_pHelper;
 }
 
 bool Model::saveUserCommand(QString userCmdName, QString cmdName, QVector<QString> parameters, QString &errorMessage)
@@ -39,7 +27,7 @@ bool Model::saveUserCommand(QString userCmdName, QString cmdName, QVector<QStrin
       errorMessage = tr("Unable to create command \"%1\". Name is already in use.").arg(userCmdName);
    } else
    {
-      command = m_pFactory->createCommand(cmdName, parameters);
+      command = m_helper.createCommand(cmdName, parameters);
       if(command)
       {
          m_userCommandsList.insert(userCmdName, command);
@@ -55,12 +43,12 @@ bool Model::saveUserCommand(QString userCmdName, QString cmdName, QVector<QStrin
 
 const QVector<ICommand *> &Model::abstractCommandsList() const
 {
-   return m_pHelper->getAvailableCommands();
+   return m_helper.getAvailableCommands();
 }
 
 const QString Model::commandDescription(QString cmdName) const
 {
-   return m_pHelper->getCommandDescription(cmdName);
+   return m_helper.getCommandDescription(cmdName);
 }
 
 const QList<QString> Model::userCommandsList() const
@@ -82,7 +70,7 @@ const ICommand * Model::getUserCommand(QString userCmdName) const
 
 const QVector<QString> &Model::commandParameterNames(QString cmdName) const
 {
-   return m_pHelper->getCommandParameterNames(cmdName);
+   return m_helper.getCommandParameterNames(cmdName);
 }
 
 bool Model::removeCommand(QString cmdName)
@@ -119,22 +107,7 @@ bool Model::changeClientName(QString oldName, QString newName)//TODO move to vie
 {
    Q_UNUSED(oldName);
    Q_UNUSED(newName);
-   //RESTRICTED TODO add this feature.
-//   if(m_clientsList.keys().contains(oldName) && !m_clientsList.keys().contains(newName))
-//   {
-//      QString clientResult = m_clientsList.take(oldName);
-//      if(m_clientsList.remove(oldName) > 0)
-//      {
-//         qWarning() << "Unable to remove client \"" << oldName << "\" from clients map.";
-//         return false;
-//      }
-//      m_clientsList.insert(newName, clientResult);
-//   } else
-//   {
-//      qWarning() << " Name \"" << newName << "\" is already in use";
-//      return false;
-//   }
-   //RESTRICTED
+   Q_ASSERT_X(false, "Model::changeClientName", "NOT implemented yet!");
    return false;
 }
 

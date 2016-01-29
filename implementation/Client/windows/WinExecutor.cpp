@@ -13,12 +13,12 @@ WinExecutor::WinExecutor(QObject *parent)
    : QObject(parent)
    , m_pPopup(nullptr)
 {
-   m_pPopup = new PopupMessage;
 }
 
 WinExecutor::~WinExecutor()
 {
-   m_pPopup->deleteLater();
+   if(m_pPopup)
+      m_pPopup->deleteLater();
 }
 
 bool WinExecutor::getRunningProcessesList(QStringList &out_data, QString &out_error, QString split)
@@ -91,6 +91,8 @@ bool WinExecutor::killProcessByName(QString name, QString &out_error)
 
 void WinExecutor::showMessage(QString header, QString body, int seconds)
 {
+   if(!m_pPopup)
+      m_pPopup = new PopupMessage;
    m_pPopup->setHeader(header);
    m_pPopup->setText(body);
    m_pPopup->setTime(seconds);

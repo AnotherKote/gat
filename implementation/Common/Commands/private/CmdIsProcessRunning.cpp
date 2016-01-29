@@ -1,10 +1,16 @@
 #include "Common/Commands/CmdIsProcessRunning.hpp"
+#include "Common/CommandHelper.hpp"
 #ifdef CLIENT
 #include "Client/windows/WinExecutor.hpp"
 #endif
 
 CmdIsProcessRunning::CmdIsProcessRunning(QObject *parent)
-: ICommand("Is process running",
+#ifdef CLIENT
+: IExecutableCommand
+#else
+: ICommand
+#endif
+  ("Is process running",
            QVector<QString>{"Process Name"},
            parent)
 {
@@ -13,6 +19,8 @@ CmdIsProcessRunning::CmdIsProcessRunning(QObject *parent)
    m_pExecutor = new WinExecutor;
 #endif
 }
+
+REGISTER_COMMAND(CmdIsProcessRunning)
 
 void CmdIsProcessRunning::resetTexts()
 {

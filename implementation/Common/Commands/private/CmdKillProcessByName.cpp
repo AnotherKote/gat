@@ -1,10 +1,16 @@
 #include "Common/Commands/CmdKillProcessByName.hpp"
+#include "Common/CommandHelper.hpp"
 #ifdef CLIENT
 #include "Client/windows/WinExecutor.hpp"
 #endif
 
 CmdKillProcessByName::CmdKillProcessByName(QObject *parent)
-: ICommand("Kill process by name",
+#ifdef CLIENT
+: IExecutableCommand
+#else
+: ICommand
+#endif
+  ("Kill process by name",
            QVector<QString>{"Process Name"},
            parent)
 {
@@ -13,6 +19,8 @@ CmdKillProcessByName::CmdKillProcessByName(QObject *parent)
    m_pExecutor = new WinExecutor;
 #endif
 }
+
+REGISTER_COMMAND(CmdKillProcessByName)
 
 void CmdKillProcessByName::resetTexts()
 {

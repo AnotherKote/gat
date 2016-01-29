@@ -1,12 +1,18 @@
 #include <QObject>
 #include "Common/Commands/CmdShowMessage.hpp"
+#include "Common/CommandHelper.hpp"
 
 #ifdef CLIENT
 #include "Client/windows/WinExecutor.hpp"
 #endif
 
 CmdShowMessage::CmdShowMessage(QObject *parent)
-: ICommand("Show message box",
+#ifdef CLIENT
+: IExecutableCommand
+#else
+: ICommand
+#endif
+  ("Show message box",
            QVector<QString> {"Message Header", "Message", "Duration(s)"},
            parent)
 {
@@ -15,6 +21,8 @@ CmdShowMessage::CmdShowMessage(QObject *parent)
    m_pExecutor = new WinExecutor;
 #endif
 }
+
+REGISTER_COMMAND(CmdShowMessage)
 
 #ifdef CLIENT
 bool CmdShowMessage::execute()

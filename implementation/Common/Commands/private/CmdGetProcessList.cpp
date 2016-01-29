@@ -1,11 +1,17 @@
 #include "Common/Commands/CmdGetProcessList.hpp"
+#include "Common/CommandHelper.hpp"
 
 #ifdef CLIENT
 #include "Client/windows/WinExecutor.hpp"
 #endif
 
 CmdGetProcessList::CmdGetProcessList(QObject *parent)
-: ICommand("Get process list",
+#ifdef CLIENT
+: IExecutableCommand
+#else
+: ICommand
+#endif
+  ("Get process list",
            QVector<QString>(),
            parent)
 {
@@ -14,6 +20,8 @@ CmdGetProcessList::CmdGetProcessList(QObject *parent)
    m_pExecutor = new WinExecutor;
 #endif
 }
+
+REGISTER_COMMAND(CmdGetProcessList)
 
 void CmdGetProcessList::resetTexts()
 {
@@ -26,5 +34,3 @@ bool CmdGetProcessList::execute()
    return m_pExecutor->getRunningProcessesList(m_results, m_error);
 }
 #endif
-
-///TODO static macros init

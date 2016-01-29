@@ -5,14 +5,8 @@
 #include <QFile>
 #include <QDebug>
 
-#include "Common/gen/GEN_CommandFactory.hpp"
-#include "Common/Commands/ICommand.hpp"
-#include "Common/Commands/IExecutableCommand.hpp"
 #include "Invoker.hpp"
 #include "SystemTray.hpp"
-#include "windows/WinExecutor.hpp"
-#include "NetworkManager.hpp"
-#include "Common/ProtocolManager.hpp"
 
 QFile outFile("GAT_Client_log.txt");
 

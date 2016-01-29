@@ -8,9 +8,10 @@
 #endif
 
 class CmdShowMessage
-      : public ICommand
 #ifdef CLIENT
-      , public IExecutableCommand
+   : public IExecutableCommand
+#else
+   : public ICommand
 #endif
 {
    Q_OBJECT

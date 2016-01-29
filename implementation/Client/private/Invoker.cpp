@@ -3,7 +3,6 @@
 #include "windows/WinExecutor.hpp"
 #include "Common/ProtocolManager.hpp"
 #include "Common/Commands/IExecutableCommand.hpp"
-#include "Common/gen/GEN_CommandFactory.hpp"
 
 #include <QDebug>
 
@@ -11,18 +10,16 @@ Invoker::Invoker(QObject *parent)
 : QObject(parent)
 , m_pNetworkManager(nullptr)
 , m_pProtocolManager(nullptr)
-, m_pFactory(nullptr)
+, m_helper(CommandHelper::instance())
 {
    m_pNetworkManager = new NetworkManager(this);
    m_pProtocolManager = new ProtocolManager(this);
-   m_pFactory = new GEN_CommandFactory();
 
    connect(m_pNetworkManager, &NetworkManager::signalDataReceived, this, &Invoker::slotMessageFromServer);
 }
 
 Invoker::~Invoker()
 {
-   delete m_pFactory;
 }
 
 void Invoker::run(QString host, int port, int recconectionInterval)
@@ -37,7 +34,7 @@ void Invoker::slotMessageFromServer(QString message)
    QString error;
    if(m_pProtocolManager->decodeCommand(message, cmdName, parameters, error))
    {
-      IExecutableCommand *cmd = m_pFactory->createCommand(cmdName, parameters);
+      IExecutableCommand *cmd = m_helper.createCommand(cmdName, parameters);
       if(cmd)
       {
          QString cmdResultData;
